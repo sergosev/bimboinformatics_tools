@@ -1,20 +1,21 @@
-def is_nucleic_acid(seq: str, alphabet: set = set("AaTtUuCcGg")) -> bool:
+ALPHABET = set("AaTtUuCcGg")
+T_SET = {"T", "t"}
+U_SET = {"U", "u"}
+
+def is_nucleic_acid(seq: str, alphabet: set = ALPHABET) -> bool:
     """
     Checks whether the given sequence is a nucleic acid
-
+     
     Arguments:
     - seq: a string of both UPPERCASE and lowercase letters
     - alphabet: a set of acceptable nucleotides. Default is set("AaTtUuCcGg")
-
+     
+    Returns False if the sequence contains both T and U.
     Returns bool. 
     """
-    seq = set(seq)
-    if any(item in set("Tt") for item in seq) and any(
-        item in set("Uu") for item in seq
-    ):
-        return False
-    else:
-        return seq <= alphabet
+    seq_set = set(seq)
+    return seq_set <= alphabet and not (seq_set & T_SET and seq_set & U_SET)
+
     
 def reverse(seq: str) -> str:
     """

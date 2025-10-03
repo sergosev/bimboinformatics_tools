@@ -23,7 +23,7 @@ def run_dna_rna_tools(*seqs: str):
     - complement: returns complement vesions of given sctrings
     - reverse_complement: returns reversed complement versions of the given strings
 
-    Returns False if a string is not a nucleic acid. 
+    If a string contains both T and U (i.e. is not a nucleic acid) - results in False. 
     Otherwise returns a resulting string or bool.
     """
     
