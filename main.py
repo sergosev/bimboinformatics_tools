@@ -1,11 +1,14 @@
 import sys
 import os
 
-
 # Setting the path to modules folder
 script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 modules_path = os.path.join(script_dir, "modules")
 sys.path.append(modules_path)
+
+from typing import Union
+import nucleic_tools as nt # importing nucleic tools module
+import fastq_tools as ft # importing fastq tools module
 
 
 def run_dna_rna_tools(*seqs: str):
@@ -26,9 +29,6 @@ def run_dna_rna_tools(*seqs: str):
     If a string contains both T and U (i.e. is not a nucleic acid) - results in False. 
     Otherwise returns a resulting string or bool.
     """
-    
-    # importing nucleic tools module
-    import nucleic_tools as nt
 
     command = seqs[-1]  #  saving the procedure name
     sequences = seqs[:-1]  #  saving the list of sequences
@@ -59,3 +59,29 @@ def run_dna_rna_tools(*seqs: str):
                 result.append(nuc_status)
 
         return result
+    
+def filter_fastq(seqs: dict, 
+                 gc_bounds: tuple[Union[int, float]] = (0, 100), 
+                 length_bounds: tuple[int] = (0, 2**21), 
+                 quality_threshold: Union[int, float] = 0) -> dict:
+    """
+    Filters a dictionary with fastq nucleic acid sequences.
+
+    Arguments:
+    - seqs: a dictionary of fastq nucleic acid sequences
+    - gc_bounds: a tuple with GC percentage boundaries (integer or float). Default is (0, 100)
+    - length_bounds: a tuple with length boundaries (only integer) Default is (0, 2**32)
+    - quality_threshold: an integer or float number, lower boundary for mean quality. Default is 0.
+
+    Returns a new dictionary containing sequences that correspond to the given filters.
+    For valid results check if your sequences are nucleic acids using nucleic_tools module.
+    """
+
+    filtered_seq = {}
+    for key in seqs:
+        if (ft.gc_filter(seqs[key][0], gc_bounds=gc_bounds) and
+            ft.len_filter(seqs[key][0], len_bounds=length_bounds) and
+            ft.quality_filter(seqs[key][1], threshold=quality_threshold)):
+            filtered_seq[key] = seqs[key]
+    
+    return filtered_seq

@@ -24,7 +24,7 @@ def gc_filter(seq: str, gc_bounds: tuple = (0, 100)) -> bool:
     Return bool.
     """
 
-    return gc_count(seq) >= gc_bounds[0] and gc_count(seq) <= gc_bounds[1]
+    return gc_bounds[0] <= gc_count(seq)*100 <= gc_bounds[1]
 
 def len_filter(seq: str, len_bounds: tuple = (0, 2**32)) -> bool:
     """
