@@ -11,3 +11,4 @@ sys.path.append(modules_path)
 from is_nucleic_acid import is_nucleic_acid
 from transcribe import transcribe
 from reverse import reverse
+from complement import complement
