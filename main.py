@@ -12,3 +12,4 @@ from is_nucleic_acid import is_nucleic_acid
 from transcribe import transcribe
 from reverse import reverse
 from complement import complement
+from reverse_complement import reverse_complement
