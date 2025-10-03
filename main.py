@@ -63,7 +63,7 @@ def run_dna_rna_tools(*seqs: str):
 def filter_fastq(
         seqs: dict, 
         gc_bounds: tuple[Union[int, float]] = (0, 100), 
-        ength_bounds: tuple[int] = (0, 2**21), 
+        length_bounds: tuple[int] = (0, 2**21), 
         quality_threshold: Union[int, float] = 0
 ) -> dict:
     """
