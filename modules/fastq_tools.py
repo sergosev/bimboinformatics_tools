@@ -1,5 +1,6 @@
 from typing import Union
 
+
 def gc_count(seq: str) -> float:
     """
     Counts the GC content of a given string.
@@ -9,9 +10,10 @@ def gc_count(seq: str) -> float:
 
     Returns a float number.
     """
-    
+
     seq = seq.lower()
-    return (seq.count("c") + seq.count("g"))/len(seq)
+    return (seq.count("c") + seq.count("g")) / len(seq)
+
 
 def gc_filter(seq: str, gc_bounds: tuple = (0, 100)) -> bool:
     """
@@ -24,7 +26,8 @@ def gc_filter(seq: str, gc_bounds: tuple = (0, 100)) -> bool:
     Return bool.
     """
 
-    return gc_bounds[0] <= gc_count(seq)*100 <= gc_bounds[1]
+    return gc_bounds[0] <= gc_count(seq) * 100 <= gc_bounds[1]
+
 
 def len_filter(seq: str, len_bounds: tuple = (0, 2**32)) -> bool:
     """
@@ -37,7 +40,8 @@ def len_filter(seq: str, len_bounds: tuple = (0, 2**32)) -> bool:
     Returns bool
     """
 
-    return len(seq) >= len_bounds[0] and len(seq) <= len_bounds[1]
+    return len_bounds[0] <= len(seq) <= len_bounds[1]
+
 
 def quality_filter(seq: str, threshold: Union[int, float] = 0) -> bool:
     """
@@ -50,5 +54,5 @@ def quality_filter(seq: str, threshold: Union[int, float] = 0) -> bool:
     Returns bool
     """
 
-    seq_qual = sum([ord(i) for i in seq])/len(seq)
+    seq_qual = sum([ord(i) for i in seq]) / len(seq)
     return seq_qual >= threshold

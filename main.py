@@ -7,8 +7,8 @@ modules_path = os.path.join(script_dir, "modules")
 sys.path.append(modules_path)
 
 from typing import Union
-import nucleic_tools as nt # importing nucleic tools module
-import fastq_tools as ft # importing fastq tools module
+import nucleic_tools as nt  # importing nucleic tools module
+import fastq_tools as ft  # importing fastq tools module
 
 
 def run_dna_rna_tools(*seqs: str):
@@ -17,7 +17,7 @@ def run_dna_rna_tools(*seqs: str):
 
     Arguments:
     - seqs - a series of strings containing DNA or RNA sequences, separated by a coma.
-    
+
     Last string of the series must be a procedure:
     - is_nucleic_acid: checks whether give strings are nucleic acids or not. Returns bool
     - reverse: reverts the given strings
@@ -26,7 +26,7 @@ def run_dna_rna_tools(*seqs: str):
     - complement: returns complement vesions of given sctrings
     - reverse_complement: returns reversed complement versions of the given strings
 
-    If a string contains both T and U (i.e. is not a nucleic acid) - results in False. 
+    If a string contains both T and U (i.e. is not a nucleic acid) - results in False.
     Otherwise returns a resulting string or bool.
     """
 
@@ -59,11 +59,14 @@ def run_dna_rna_tools(*seqs: str):
                 result.append(nuc_status)
 
         return result
-    
-def filter_fastq(seqs: dict, 
-                 gc_bounds: tuple[Union[int, float]] = (0, 100), 
-                 length_bounds: tuple[int] = (0, 2**21), 
-                 quality_threshold: Union[int, float] = 0) -> dict:
+
+
+def filter_fastq(
+    seqs: dict,
+    gc_bounds: tuple[Union[int, float]] = (0, 100),
+    length_bounds: tuple[int] = (0, 2**21),
+    quality_threshold: Union[int, float] = 0,
+) -> dict:
     """
     Filters a dictionary with fastq nucleic acid sequences.
 
@@ -79,9 +82,11 @@ def filter_fastq(seqs: dict,
 
     filtered_seq = {}
     for key in seqs:
-        if (ft.gc_filter(seqs[key][0], gc_bounds=gc_bounds) and
-            ft.len_filter(seqs[key][0], len_bounds=length_bounds) and
-            ft.quality_filter(seqs[key][1], threshold=quality_threshold)):
+        if (
+            ft.gc_filter(seqs[key][0], gc_bounds=gc_bounds)
+            and ft.len_filter(seqs[key][0], len_bounds=length_bounds)
+            and ft.quality_filter(seqs[key][1], threshold=quality_threshold)
+        ):
             filtered_seq[key] = seqs[key]
-    
+
     return filtered_seq
