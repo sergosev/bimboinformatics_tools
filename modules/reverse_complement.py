@@ -1,4 +1,4 @@
-    def reverse_complement(seq: str):
+def reverse_complement(seq: str):
     """
     Gives a reverse complement of a given string
     
@@ -7,4 +7,5 @@
     
     Returns string.
     """
-return complement(seq)[::-1]
+    from complement import complement
+    return complement(seq)[::-1]
