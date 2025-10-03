@@ -2,7 +2,7 @@ import sys
 import os
 
 
-# Setting the paths to modules folder
+# Setting the path to modules folder
 script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 modules_path = os.path.join(script_dir, "modules")
 sys.path.append(modules_path)
@@ -27,38 +27,35 @@ def run_dna_rna_tools(*seqs: str):
     Otherwise returns a resulting string or bool.
     """
     
-    # importing all needed modules
-    from is_nucleic_acid import is_nucleic_acid
-    from transcribe import transcribe
-    from reverse_transcribe import reverse_transcribe
-    from reverse import reverse
-    from complement import complement
-    from reverse_complement import reverse_complement
+    # importing nucleic tools module
+    import nucleic_tools as nt
 
     command = seqs[-1]  #  saving the procedure name
     sequences = seqs[:-1]  #  saving the list of sequences
 
     #  creating a dictionary for procedures
     procedures = {
-        "is_nucleic_acid": is_nucleic_acid,
-        "transcribe": transcribe,
-        "reverse_transcribe": reverse_transcribe,
-        "reverse": reverse,
-        "complement": complement,
-        "reverse_complement": reverse_complement,
+        "is_nucleic_acid": nt.is_nucleic_acid,
+        "transcribe": nt.transcribe,
+        "reverse_transcribe": nt.reverse_transcribe,
+        "reverse": nt.reverse,
+        "complement": nt.complement,
+        "reverse_complement": nt.reverse_complement,
     }
 
     #  for one give sequence return a string
     #  more than one - a list of strings
     if len(sequences) == 1:
         seq = sequences[0]
-        return procedures[command](seq) if is_nucleic_acid(seq) else f'{is_nucleic_acid(seq)}: not a nucleic acid'
+        nuc_status = nt.is_nucleic_acid(seq)
+        return procedures[command](seq) if nuc_status else nuc_status
     else:
         result = []
         for seq in sequences:
-            if is_nucleic_acid(seq):
+            nuc_status = nt.is_nucleic_acid(seq)
+            if nuc_status:
                 result.append(procedures[command](seq))
             else:
-                result.append(f'{is_nucleic_acid(seq)}: not a nucleic acid')
+                result.append(nuc_status)
 
         return result
