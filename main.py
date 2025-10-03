@@ -79,13 +79,13 @@ def filter_fastq(
     For valid results check if your sequences are nucleic acids using nucleic_tools module.
     """
 
-    filtered_seq = {}
+    filtered_seqs = {}
     for key in seqs:
         if (
             ft.gc_filter(seqs[key][0], gc_bounds=gc_bounds) and
             ft.len_filter(seqs[key][0], len_bounds=length_bounds) and
             ft.quality_filter(seqs[key][1], threshold=quality_threshold)
             ):
-            filtered_seq[key] = seqs[key]
+            filtered_seqs[key] = seqs[key]
     
-    return filtered_seq
+    return filtered_seqs
