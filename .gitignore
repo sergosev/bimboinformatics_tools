@@ -3,3 +3,4 @@
 ./__pycache__/
 ./filtered/
 ./filtered/*
+processor_output/parse_output.txt
