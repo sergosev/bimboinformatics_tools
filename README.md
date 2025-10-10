@@ -59,12 +59,12 @@ Arguments:
 Returns None. Saves flanking genes' names and their translations to a fasta file.
 The fasta file is saved to the `./processor_output` directory.
 
-> [!NOTE] CURRENT PROBLEMS
-> The function does not account for:
-> - neighbouring GoIs
-> - GoIs in the end and the beggining of gbk file
-> 
-> In these cases it might produce incomplete results or raise errors.
+CURRENT PROBLEMS
+The function does not account for:
+- neighbouring GoIs
+- GoIs in the end and the beggining of gbk file
+
+In these cases it might produce incomplete results or raise errors.
 
 **Example of use**
 ```
@@ -97,4 +97,4 @@ Would be glad to hear any suggestions!
 TG: @small_party
 
 I started a collection of meme for my README so brace yourselves))))
-![[telegram-cloud-photo-size-2-5424781400269258273-y.webp]]
+![](https://github.com/sergosev/bimboinformatics_tools/blob/HW5/pics/telegram-cloud-photo-size-2-5424781400269258273-y.webp?raw=true)
