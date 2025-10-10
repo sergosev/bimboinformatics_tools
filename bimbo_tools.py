@@ -7,8 +7,8 @@ modules_path = os.path.join(script_dir, "modules")
 sys.path.append(modules_path)
 
 from typing import Union
-import nucleic_tools as nt  # importing nucleic tools module
-import fastq_tools as ft  # importing fastq tools module
+import nucleic_tools as nt # importing nucleic tools module
+import fastq_tools as ft # importing fastq tools module
 
 
 def run_dna_rna_tools(*seqs: str):
@@ -17,7 +17,7 @@ def run_dna_rna_tools(*seqs: str):
 
     Arguments:
     - seqs - a series of strings containing DNA or RNA sequences, separated by a coma.
-
+    
     Last string of the series must be a procedure:
     - is_nucleic_acid: checks whether give strings are nucleic acids or not. Returns bool
     - reverse: reverts the given strings
@@ -26,7 +26,7 @@ def run_dna_rna_tools(*seqs: str):
     - complement: returns complement vesions of given sctrings
     - reverse_complement: returns reversed complement versions of the given strings
 
-    If a string contains both T and U (i.e. is not a nucleic acid) - results in False.
+    If a string contains both T and U (i.e. is not a nucleic acid) - results in False. 
     Otherwise returns a resulting string or bool.
     """
 
@@ -59,14 +59,13 @@ def run_dna_rna_tools(*seqs: str):
                 result.append(nuc_status)
 
         return result
-
-
+    
 def filter_fastq(
-    input_file: str,
-    gc_bounds: tuple[Union[int, float], Union[int, float]] = (0, 100),
-    length_bounds: tuple[int] = (0, 2**21),
-    quality_threshold: Union[int, float] = 0,
-    output_file: str = "output_fastq.fastq",
+        input_file: str, 
+        gc_bounds: tuple[Union[int, float], Union[int, float]] = (0, 100), 
+        length_bounds: tuple[int] = (0, 2**21), 
+        quality_threshold: Union[int, float] = 0,
+        output_file: str = "output_fastq.fastq"
 ) -> dict:
     """
     Filters a fastq file with nucleic acid sequences.
@@ -85,9 +84,9 @@ def filter_fastq(
     import os
     import sys
 
-    # setting up directories
+    #setting up directories
     work_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-    if not os.path.exists(os.path.join(work_dir, "filtered")):
+    if not os.path.exists(os.path.join(work_dir, 'filtered')):
         os.mkdir(os.path.join(work_dir, "filtered"))
     output_path = os.path.join(work_dir, "filtered", output_file)
 
@@ -95,11 +94,9 @@ def filter_fastq(
     filtered_seqs = {}
     counter = 0
     passed = 0
-    with (
-        open(input_file, mode="r") as input_fastq,
-        open(output_path, mode="w") as output_fastq,
-    ):
-
+    with (open(input_file, mode="r") as input_fastq,
+          open(output_path, mode="w") as output_fastq):
+        
         for line in input_fastq:
             if line.startswith("@"):
                 counter += 1
@@ -108,20 +105,20 @@ def filter_fastq(
                 next(input_fastq)
                 qual_score = input_fastq.readline().strip()
 
-                if (
-                    ft.gc_filter(seq=seq, gc_bounds=gc_bounds)
-                    and ft.len_filter(seq=seq, len_bounds=length_bounds)
-                    and ft.quality_filter(seq=qual_score, threshold=quality_threshold)
-                ):
+                
+                if (ft.gc_filter(seq=seq, gc_bounds=gc_bounds) and
+                    ft.len_filter(seq=seq, len_bounds=length_bounds) and
+                    ft.quality_filter(seq=qual_score,
+                                      threshold=quality_threshold)):
                     passed += 1
                     filtered_seqs[key] = [seq, qual_score]
                     output_fastq.write(key)
-                    output_fastq.write(seq + "\n")
-                    output_fastq.write("+" + key[1:])
-                    output_fastq.write(qual_score + "\n")
+                    output_fastq.write(seq+"\n")
+                    output_fastq.write("+"+key[1:])
+                    output_fastq.write(qual_score+"\n")
 
-    print(f"Received {counter} sequences.")
-    print(f"Returned {passed} sequences.")
-    print(f"Filtered sequences saved to {output_path}")
-    print(f"Filtered out {counter - passed} sequences.")
+    print(f'Received {counter} sequences.')
+    print(f'Returned {passed} sequences.')
+    print(f'Filtered sequences saved to {output_path}')
+    print(f'Filtered out {counter - passed} sequences.')
     return filtered_seqs
