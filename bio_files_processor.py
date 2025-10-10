@@ -10,11 +10,28 @@ from typing import Union
 import processor_tools as pt
 
 def select_genes_from_gbk_to_fasta(input_gbk: str, 
-                                   genes: Union[str, list[str]], 
+                                   genes: Union[list[str], str], 
                                    n_before: int = 1, 
                                    n_after: int = 1,
                                    output_fasta: str = "gbk_to_fasta_result.fasta"):
-    
+    """
+    Parses through gbk file and selects genes flanking the genes of interest (GoIs)
+
+    Arguments:
+    - input_gbk: a string containing the path to gbk file
+    - genes: list of GoIs as strings or a string with one GoI
+    - n_before: an int number of flanking genes before GoI
+    - n_after: an int number of flanking genes after GoI
+    - output_fasta: a string containing the name of output fasta file
+
+    Returns None. Saves flanking genes names and their translations to a fasta file.
+    The fasta file is saved to the ./processor_output directory
+
+    CURRENT PROBLEMS: the function does not accout for:
+    - neighbouring GoIs
+    - GoIs in the end and the beggining of gbk file
+    In these cases it might produce incomplete results or raise errors.
+    """
     import os
     import sys
 
@@ -26,21 +43,26 @@ def select_genes_from_gbk_to_fasta(input_gbk: str,
 
     buffer = {}
     results = {}
+    genes = [genes] if isinstance(genes, str) else genes
 
     with open(input_gbk, mode="r") as input_gbk:
+        # iterating though file
         for line in input_gbk:
             line = line.strip()
+
+            # if met "gene" annotation - save it to buffer
             if line.startswith('/gene'):
                 current_gene = pt.extract_gene_name(line)
                 while not line.startswith('/translation'):
                     line = next(input_gbk).strip()
-                print(line)
-                curr_translation = pt.extract_translation(line) # gotta fix
+                curr_translation = pt.extract_translation(line, input_gbk) 
                 buffer[current_gene] = curr_translation
             
+                # delete oldest value if buffer is too long
                 if len(buffer) > n_before + 1:
                     buffer.pop(next(iter(buffer)))
                 
+                # if met the GoI - save rear and from flanking genes
                 if current_gene in genes:
                     for key in list(buffer.keys()):
                         if key != list(buffer.keys())[-1]:
@@ -54,7 +76,7 @@ def select_genes_from_gbk_to_fasta(input_gbk: str,
                         gene = pt.extract_gene_name(line)
                         while not line.startswith('/translation'):
                             line = next(input_gbk).strip()
-                        translation = pt.extract_translation(line) # gotta fix
+                        translation = pt.extract_translation(line, input_gbk)
                         results[gene] = translation
                         i+=1
 
@@ -63,10 +85,8 @@ def select_genes_from_gbk_to_fasta(input_gbk: str,
             output_fasta.write(">" + gene + "\n")
             output_fasta.write(translation + "\n")
             output_fasta.write("\n")
-
-select_genes_from_gbk_to_fasta(input_gbk='/mnt/c/Users/serol/Downloads/example_gbk.gbk',
-                               genes = ["kdpB", "kefC_2", "vgrG1_3"],
-                               n_after=2, n_before=2)
+    
+    return None
 
 def parse_blast_output(input_file: str, output_file: str = "parse_output.txt"):
     """
