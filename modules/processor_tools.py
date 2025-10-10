@@ -11,6 +11,7 @@ def extract_gene_name(line: str):
             gene_name = line[start:end]
     return gene_name
 
+
 def extract_translation(line: str, file):
     """
     Goes though a given line of a gbk file and extrascts AA sequences.
@@ -29,5 +30,5 @@ def extract_translation(line: str, file):
                 translation += line.strip()
                 line = next(file).strip()
             translation += line[:-1]
-            
+
     return translation
