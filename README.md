@@ -93,7 +93,7 @@ parse_blast_output(input_file="example_blast_result.txt",
 					output_file="desc_list.txt")
 ```
 ## Contacts
-Would be glad to hear any suggestions! 
+Would be glad to hear any suggestions! Especially how to deal with 7 intendation levels...
 TG: @small_party
 
 I started a collection of meme for my README so brace yourselves))))
