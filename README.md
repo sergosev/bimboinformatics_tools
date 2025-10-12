@@ -2,7 +2,7 @@
 This is my study project where I am supposed to create a python script that performs various manipulations with nucleic acid sequences and filter fastq sequences. Unfortunately for my educators the task didn't say anything specific about the naming of the repository 💀 
 
 The tools here don't require installation, you are free to use them from your IDE. Consider the fact that all modules and scripts here were written with Python 3.12.3.
-## main.py
+## bimbo_tools.py
 This script is the entry point. It contains 2 main functions: `run_dna_rna_tools()` and `filter_fastq()`. The supplementary functions needed for these 2 to work are located in **nucleic_tools.py** and **fastq_tools.py** modules in `./modules/` directory.
 
 ### run_dna_rna_tools()
@@ -28,12 +28,12 @@ print(run_dna_rna_tools("GAuaGuaCCucA", "is_nucleic_acid")) # True
 ```
 
 ### filter_fastq()
-This function takes on a dictionary of fastq sequences with theis IDs as keys and items as tuples of sequence itself and phed33 quality scores per each nucleotide. For now the function is capable of taking these parameters for filtering as its arguments:
+This function takes in a fastq file. For now the function is capable of taking these parameters for filtering as its arguments:
 - gc_bounds: a tuple with GC percentage boundaries (integer or float). Default is (0, 100)
 - length_bounds: a tuple with length boundaries (only integer) Default is (0, $2^{32}$)
 - quality_threshold: an integer or float number, lower boundary for mean quality. Default is 0.
 
-The function returns a new, filtered dictionary.
+The function returns a new, filtered dictionary, prints numbers of taken and filtered sequences, saves the filtered result to a file in a `./filtered` directory.
 
 **Example of use**
 ```{python3}
@@ -43,8 +43,58 @@ filter_fastq(example_dict,
 			quality_threshold=99.9)
 ```
 
+## bio_files_processor.py
+This scripts is set to read some bioinformatics file formats. For now there are 2 functions: `select_from_gbk_to_fasta()` and `parse_blast_output()`.
+
+### select_from_gbk_to_fasta()
+Parses through gbk file and selects genes flanking the genes of interest (GoIs)
+
+Arguments:
+- input_gbk: a string containing the path to gbk file
+- genes: list of GoIs as strings or a string with one GoI
+- n_before: an int number of flanking genes before GoI
+- n_after: an int number of flanking genes after GoI
+- output_fasta: a string containing the name of output fasta file
+
+Returns None. Saves flanking genes' names and their translations to a fasta file.
+The fasta file is saved to the `./processor_output` directory.
+
+CURRENT PROBLEMS
+The function does not account for:
+- neighbouring GoIs
+- GoIs in the end and the beggining of gbk file
+
+In these cases it might produce incomplete results or raise errors.
+
+**Example of use**
+```
+select_genes_from_gbk_to_fasta(input_gbk="example_gbk.gbk", genes="iucA",
+								n_before=3, n_after=2,
+								output_fasta="result_fasta.fasta")
+								
+select_genes_from_gbk_to_fasta(input_gbk="example_gbk.gbk", 
+								genes=["iucA", "kdpD"],
+								n_before=3, n_after=2,
+								output_fasta="result_fasta.fasta")
+```
+### parse_blast_output()
+Parses through a BLAST results .txt file and extracts best matches.
+
+Arguments:
+- input_file: path to the .txt file with BLAST results
+- output file: a string containing the name of output .txt file
+
+Returns a list of descriptions with best matches for each query. List is sorted alphabettically.
+Writes the resulting list to an output .txt file in the "/processor_output" directory.
+
+**Example of use**
+```
+parse_blast_output(input_file="example_blast_result.txt",
+					output_file="desc_list.txt")
+```
 ## Contacts
-Would be glad to hear any suggestions! 
+Would be glad to hear any suggestions! Especially how to deal with 7 intendation levels...
 TG: @small_party
 
-To BI teachers and curators: Please don't expel me for this meme 👺 ![](https://sun9-47.userapi.com/s/v1/if2/v2M8zw2_kcArG0kwZ286hCzTl4CuS5vc8VacQy2gx6SMyxUjEydbNNetLyQaCzGnnIGHUkOPegfpXqdRY-pLzTvH.jpg?quality=95&as=32x29,48x44,72x66,108x99,160x147,240x221,360x331,480x442,540x497,640x589,720x663,828x762&from=bu&u=CS0R8gurS81rusC4tCPCHgewUBC5Sf3pU3mstqEbKeI&cs=828x0)
+I started a collection of meme for my README so brace yourselves))))
+![](https://github.com/sergosev/bimboinformatics_tools/blob/HW5/pics/telegram-cloud-photo-size-2-5424781400269258273-y.webp?raw=true)

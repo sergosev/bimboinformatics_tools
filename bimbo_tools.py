@@ -61,31 +61,64 @@ def run_dna_rna_tools(*seqs: str):
         return result
     
 def filter_fastq(
-        seqs: dict, 
-        gc_bounds: tuple[Union[int, float]] = (0, 100), 
+        input_file: str, 
+        gc_bounds: tuple[Union[int, float], Union[int, float]] = (0, 100), 
         length_bounds: tuple[int] = (0, 2**21), 
-        quality_threshold: Union[int, float] = 0
+        quality_threshold: Union[int, float] = 0,
+        output_file: str = "output_fastq.fastq"
 ) -> dict:
     """
-    Filters a dictionary with fastq nucleic acid sequences.
+    Filters a fastq file with nucleic acid sequences.
 
     Arguments:
-    - seqs: a dictionary of fastq nucleic acid sequences
+    - input_file: a string containing a path to input fastq file
     - gc_bounds: a tuple with GC percentage boundaries (integer or float). Default is (0, 100)
     - length_bounds: a tuple with length boundaries (only integer) Default is (0, 2**32)
     - quality_threshold: an integer or float number, lower boundary for mean quality. Default is 0.
+    - output_file: a string containin the name of the output file
 
     Returns a new dictionary containing sequences that correspond to the given filters.
+    Saves the result to "filtered" directory in an output fastq file.
     For valid results check if your sequences are nucleic acids using nucleic_tools module.
     """
+    import os
+    import sys
 
+    #setting up directories
+    work_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    if not os.path.exists(os.path.join(work_dir, 'filtered')):
+        os.mkdir(os.path.join(work_dir, "filtered"))
+    output_path = os.path.join(work_dir, "filtered", output_file)
+
+    # filtering on the go
     filtered_seqs = {}
-    for key in seqs:
-        if (
-            ft.gc_filter(seqs[key][0], gc_bounds=gc_bounds) and
-            ft.len_filter(seqs[key][0], len_bounds=length_bounds) and
-            ft.quality_filter(seqs[key][1], threshold=quality_threshold)
-            ):
-            filtered_seqs[key] = seqs[key]
-    
+    counter = 0
+    passed = 0
+    with (open(input_file, mode="r") as input_fastq,
+          open(output_path, mode="w") as output_fastq):
+        
+        for line in input_fastq:
+            if line.startswith("@"):
+                counter += 1
+                key = line
+                seq = input_fastq.readline().strip()
+                next(input_fastq)
+                qual_score = input_fastq.readline().strip()
+
+                
+                if (ft.gc_filter(seq=seq, gc_bounds=gc_bounds) and
+                    ft.len_filter(seq=seq, len_bounds=length_bounds) and
+                    ft.quality_filter(seq=qual_score,
+                                      threshold=quality_threshold)):
+                    passed += 1
+                    filtered_seqs[key] = [seq, qual_score]
+                    output_fastq.write(key)
+                    output_fastq.write(seq+"\n")
+                    output_fastq.write("+"+key[1:])
+                    output_fastq.write(qual_score+"\n")
+
+    print(f'Received {counter} sequences.')
+    print(f'Returned {passed} sequences.')
+    print(f'Filtered sequences saved to {output_path}')
+    print(f'Filtered out {counter - passed} sequences.')
     return filtered_seqs
