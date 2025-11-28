@@ -33,7 +33,7 @@ This function takes in a fastq file. For now the function is capable of taking t
 - length_bounds: a tuple with length boundaries (only integer) Default is (0, $2^{32}$)
 - quality_threshold: an integer or float number, lower boundary for mean quality. Default is 0.
 
-The function returns a new, filtered dictionary, prints numbers of taken and filtered sequences, saves the filtered result to a file in a `./filtered` directory.
+The function returns a new, filtered dictionary, prints numbers of taken and filtered sequences, saves the filtered result to a file in a `./filtered` directory. There is a flag parameter save_ouput to mark whether you want to save results to a file.
 
 **Example of use**
 ```{python3}
@@ -96,5 +96,6 @@ parse_blast_output(input_file="example_blast_result.txt",
 Would be glad to hear any suggestions! Especially how to deal with 7 intendation levels...
 TG: @small_party
 
-I started a collection of meme for my README so brace yourselves))))
-![](https://github.com/sergosev/bimboinformatics_tools/blob/HW5/pics/telegram-cloud-photo-size-2-5424781400269258273-y.webp?raw=true)
+
+![](Python/Homeworks/HW4/bimboinformatics_tools/pics/image.webp)
+![]()
