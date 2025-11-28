@@ -97,5 +97,5 @@ Would be glad to hear any suggestions! Especially how to deal with 7 intendation
 TG: @small_party
 
 
-![](Python/Homeworks/HW4/bimboinformatics_tools/pics/image.webp)
+![](pics/image.webp)
 ![]()
