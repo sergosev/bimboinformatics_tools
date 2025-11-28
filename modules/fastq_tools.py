@@ -8,11 +8,11 @@ def gc_count(seq: str) -> float:
     Arguments:
     - seq: a nucleic acid string
 
-    Returns a float number.
+    Returns a float number. If the sequence length is 0 returns a "Zero lengh" string.
     """
-
+    n = len(seq)
     seq = seq.lower()
-    return (seq.count("c") + seq.count("g")) / len(seq)
+    return (seq.count("c") + seq.count("g")) / n if n > 0 else "Zero lengh"
 
 
 def gc_filter(seq: str, gc_bounds: tuple = (0, 100)) -> bool:
@@ -54,5 +54,5 @@ def quality_filter(seq: str, threshold: Union[int, float] = 0) -> bool:
     Returns bool
     """
 
-    seq_qual = sum([ord(i) for i in seq]) / len(seq)
+    seq_qual = sum([ord(i)-33 for i in seq]) / len(seq)
     return seq_qual >= threshold

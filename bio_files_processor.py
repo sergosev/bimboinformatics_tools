@@ -1,14 +1,7 @@
 import sys
 import os
-
-# Setting the path to modules folder
-script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-modules_path = os.path.join(script_dir, "modules")
-sys.path.append(modules_path)
-
 from typing import Union
-import processor_tools as pt
-
+import modules.processor_tools as pt
 
 def select_genes_from_gbk_to_fasta(
     input_gbk: str,
@@ -30,13 +23,11 @@ def select_genes_from_gbk_to_fasta(
     Returns None. Saves flanking genes names and their translations to a fasta file.
     The fasta file is saved to the ./processor_output directory
 
-    CURRENT PROBLEMS: the function does not accout for:
+    CURRENT PROBLEMS: the function does not account for:
     - neighbouring GoIs
     - GoIs in the end and the beggining of gbk file
     In these cases it might produce incomplete results or raise errors.
     """
-    import os
-    import sys
 
     # setting up directories
     work_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -103,9 +94,6 @@ def parse_blast_output(input_file: str, output_file: str = "parse_output.txt"):
     Returns a list of descriptions with best matches for each query. List is sorted alphabettically.
     Writes the resulting list to an output .txt file in the "/processor_output" directory.
     """
-
-    import os
-    import sys
 
     # setting up directories
     work_dir = os.path.dirname(os.path.abspath(sys.argv[0]))

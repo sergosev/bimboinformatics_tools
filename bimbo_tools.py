@@ -1,14 +1,8 @@
-import sys
-import os
-
-# Setting the path to modules folder
-script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-modules_path = os.path.join(script_dir, "modules")
-sys.path.append(modules_path)
-
 from typing import Union
-import nucleic_tools as nt # importing nucleic tools module
-import fastq_tools as ft # importing fastq tools module
+import modules.nucleic_tools as nt 
+import modules.fastq_tools as ft 
+import os
+import sys
 
 
 def run_dna_rna_tools(*seqs: str):
@@ -65,6 +59,7 @@ def filter_fastq(
         gc_bounds: tuple[Union[int, float], Union[int, float]] = (0, 100), 
         length_bounds: tuple[int] = (0, 2**21), 
         quality_threshold: Union[int, float] = 0,
+        save_result: bool = True,
         output_file: str = "output_fastq.fastq"
 ) -> dict:
     """
@@ -72,17 +67,22 @@ def filter_fastq(
 
     Arguments:
     - input_file: a string containing a path to input fastq file
-    - gc_bounds: a tuple with GC percentage boundaries (integer or float). Default is (0, 100)
-    - length_bounds: a tuple with length boundaries (only integer) Default is (0, 2**32)
+    - gc_bounds: a tuple with GC percentage boundaries (integer or float). Default is (0, 100). Can take a single value as an upper threshold
+    - length_bounds: a tuple with length boundaries (only integer) Default is (0, 2**32). length_bounds
     - quality_threshold: an integer or float number, lower boundary for mean quality. Default is 0.
+    - save_result: a boolean value saying if the filtering result should be saved or not
     - output_file: a string containin the name of the output file
 
     Returns a new dictionary containing sequences that correspond to the given filters.
     Saves the result to "filtered" directory in an output fastq file.
     For valid results check if your sequences are nucleic acids using nucleic_tools module.
     """
-    import os
-    import sys
+    
+    if isinstance(gc_bounds, int) or isinstance(gc_bounds, float):
+        gc_bounds = (0, gc_bounds)
+
+    if isinstance(length_bounds, int):
+        length_bounds = (0, length_bounds)  
 
     #setting up directories
     work_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -112,10 +112,11 @@ def filter_fastq(
                                       threshold=quality_threshold)):
                     passed += 1
                     filtered_seqs[key] = [seq, qual_score]
-                    output_fastq.write(key)
-                    output_fastq.write(seq+"\n")
-                    output_fastq.write("+"+key[1:])
-                    output_fastq.write(qual_score+"\n")
+                    if save_result:
+                        output_fastq.write(key)
+                        output_fastq.write(seq+"\n")
+                        output_fastq.write("+"+key[1:])
+                        output_fastq.write(qual_score+"\n")
 
     print(f'Received {counter} sequences.')
     print(f'Returned {passed} sequences.')

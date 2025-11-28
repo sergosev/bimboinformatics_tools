@@ -90,8 +90,8 @@ def complement(seq: str) -> str:
         }
 
     comp = ""
-    for i in seq:
-        comp += letters[i]
+    for nucl in seq:
+        comp += letters[nucl]
 
     return comp
 
