@@ -2,13 +2,17 @@ from typing import Union
 import modules.fastq_tools as ft 
 import os
 import sys
+from abc import ABC, abstractmethod
 
 # =============================== bimbo tools class refactoring ===================================
-class BiologicalSequence():
+class BiologicalSequence(ABC):
     def __init__(self, seq: str = None)
+        if not isinstance(seq, str):
+            raise TypeError(f"Sequence must be string, got {type(seq).__name__}")
+        if not seq:
+            raise ValueError("Sequence cannot be empty")
+        
         self.seq = seq
-        self.len = len(seq)
-        self.seq_alphabet = set(seq)
 
     def __len__(self):
         return len(self.seq)
@@ -16,9 +20,12 @@ class BiologicalSequence():
     def __str__(self):
         return self.seq
 
-    @staticmethod
-    def check_alphabet(alphabet, sequence):
-        return set(sequence) == set(alphabet)
+    def __getitem__(self, key):
+        return self.seq[key]
+    
+    @abstractmethod
+    def check_alphabet(self, alphabet: set) -> bool:
+        pass
     
 class NucleicAcidSequence():
     pass
