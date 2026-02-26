@@ -1,10 +1,136 @@
 from typing import Union
-import modules.nucleic_tools as nt 
 import modules.fastq_tools as ft 
 import os
 import sys
 
+# =============================== bimbo tools class refactoring ===================================
+class BiologicalSequence():
+    pass
 
+class NucleicAcidSequence():
+    pass
+
+class DNASequence():
+    pass
+
+class RNASequence():
+    pass
+
+class AminoAcidSequence():
+    pass
+
+# =============================== bimbo tools original module scripts ===================================
+ALPHABET = set("AaTtUuCcGg")
+T_SET = {"T", "t"}
+U_SET = {"U", "u"}
+
+
+def is_nucleic_acid(seq: str, alphabet: set = ALPHABET) -> bool:
+    """
+    Checks whether the given sequence is a nucleic acid
+
+    Arguments:
+    - seq: a string of both UPPERCASE and lowercase letters
+    - alphabet: a set of acceptable nucleotides. Default is set("AaTtUuCcGg")
+
+    Returns False if the sequence contains both T and U.
+    Returns bool.
+    """
+    seq_set = set(seq)
+    return seq_set <= alphabet and not (seq_set & T_SET and seq_set & U_SET)
+
+
+def reverse(seq: str) -> str:
+    """
+    Gives a reversed version of a given string
+
+    Arguments:
+    - seq: a string of both UPPERCASE and lowercase letters
+
+    Returns string.
+    """
+    return seq[::-1]
+
+
+def transcribe(seq: str) -> str:
+    """
+    Creates a transcribed version of the given DNA sequence
+
+    Arguments:
+    - seq: a string of both UPPERCASE and lowercase letters
+
+    Returns string.
+    """
+    trans_table = str.maketrans({"T": "U", "t": "u"})  #  making a translation table
+    return seq.translate(trans_table)  #  returning transcribed sequence
+
+
+def reverse_transcribe(seq: str) -> str:
+    """
+    Gives a reverse transcribed version of a given RNA sequence
+
+    Arguments:
+    - seq: a RNA string containig UPPERCASE or lowercase letters
+
+    Return string.
+    """
+    trans_table = str.maketrans({"U": "T", "u": "t"})  #  making a translation table
+    return seq.translate(trans_table)  #  returning transcribed sequence
+
+
+def complement(seq: str) -> str:
+    """
+    Give a complement version of a given string
+
+    Arguments:
+    - seq: a string of both UPPERCASE and lowercase letters
+
+    Returns string.
+    """
+
+    if any(item in set("Uu") for item in set(seq)):
+        letters = {
+            "A": "U",
+            "a": "u",
+            "U": "A",
+            "u": "a",
+            "C": "G",
+            "c": "g",
+            "G": "C",
+            "g": "c",
+        }
+    else:
+        letters = {
+            "A": "T",
+            "a": "t",
+            "T": "A",
+            "t": "a",
+            "C": "G",
+            "c": "g",
+            "G": "C",
+            "g": "c",
+        }
+
+    comp = ""
+    for nucl in seq:
+        comp += letters[nucl]
+
+    return comp
+
+
+def reverse_complement(seq: str):
+    """
+    Gives a reverse complement of a given string
+
+    Arguments:
+    - seq: a string of both UPPERCASE and lowercase letters
+
+    Returns string.
+    """
+    return complement(seq)[::-1]
+
+
+# =============================== bimbo tools original main func ===================================
 def run_dna_rna_tools(*seqs: str):
     """
     Performs certain procedures need for work with nucleic acids.
@@ -29,24 +155,24 @@ def run_dna_rna_tools(*seqs: str):
 
     #  creating a dictionary for procedures
     procedures = {
-        "is_nucleic_acid": nt.is_nucleic_acid,
-        "transcribe": nt.transcribe,
-        "reverse_transcribe": nt.reverse_transcribe,
-        "reverse": nt.reverse,
-        "complement": nt.complement,
-        "reverse_complement": nt.reverse_complement,
+        "is_nucleic_acid": is_nucleic_acid,
+        "transcribe": transcribe,
+        "reverse_transcribe": reverse_transcribe,
+        "reverse": reverse,
+        "complement": complement,
+        "reverse_complement": reverse_complement,
     }
 
     #  for one give sequence return a string
     #  more than one - a list of strings
     if len(sequences) == 1:
         seq = sequences[0]
-        nuc_status = nt.is_nucleic_acid(seq)
+        nuc_status = is_nucleic_acid(seq)
         return procedures[command](seq) if nuc_status else nuc_status
     else:
         result = []
         for seq in sequences:
-            nuc_status = nt.is_nucleic_acid(seq)
+            nuc_status = is_nucleic_acid(seq)
             if nuc_status:
                 result.append(procedures[command](seq))
             else:
@@ -54,6 +180,8 @@ def run_dna_rna_tools(*seqs: str):
 
         return result
     
+
+# =============================== fastq filtrator original script ===================================
 def filter_fastq(
         input_file: str, 
         gc_bounds: tuple[Union[int, float], Union[int, float]] = (0, 100), 
