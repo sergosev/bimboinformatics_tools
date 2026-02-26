@@ -5,8 +5,21 @@ import sys
 
 # =============================== bimbo tools class refactoring ===================================
 class BiologicalSequence():
-    pass
+    def __init__(self, seq: str = None)
+        self.seq = seq
+        self.len = len(seq)
+        self.seq_alphabet = set(seq)
 
+    def __len__(self):
+        return len(self.seq)
+    
+    def __str__(self):
+        return self.seq
+
+    @staticmethod
+    def check_alphabet(alphabet, sequence):
+        return set(sequence) == set(alphabet)
+    
 class NucleicAcidSequence():
     pass
 
