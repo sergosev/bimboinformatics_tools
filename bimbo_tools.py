@@ -1,5 +1,4 @@
 from typing import Union
-import modules.fastq_tools as ft 
 import os
 import sys
 from abc import ABC, abstractmethod
@@ -149,6 +148,65 @@ class AminoAcidSequence(BiologicalSequence):
         
         return hydrophobic_count / len(self.seq)
 
+# =============================== fastq filtrator via BioPython ===================================
+
+
+# =============================== fastq filtrator module scripts ===================================
+def gc_count(seq: str) -> float:
+    """
+    Counts the GC content of a given string.
+
+    Arguments:
+    - seq: a nucleic acid string
+
+    Returns a float number. If the sequence length is 0 returns a "Zero lengh" string.
+    """
+    n = len(seq)
+    seq = seq.lower()
+    return (seq.count("c") + seq.count("g")) / n if n > 0 else "Zero lengh"
+
+
+def gc_filter(seq: str, gc_bounds: tuple = (0, 100)) -> bool:
+    """
+    Checks whether the given string has acceptable GC count.
+
+    Arguments:
+    - seq: a nucleic acid string
+    - gc_bounds: a tuple with lower and upper GC count boundaries
+
+    Return bool.
+    """
+
+    return gc_bounds[0] <= gc_count(seq) * 100 <= gc_bounds[1]
+
+
+def len_filter(seq: str, len_bounds: tuple = (0, 2**32)) -> bool:
+    """
+    Checks whether the given string is of acceptable length
+
+    Arguments:
+    - seq: a nucleic acid string
+    - len_bounds: a tuple with lower and upper length boundaries
+
+    Returns bool
+    """
+
+    return len_bounds[0] <= len(seq) <= len_bounds[1]
+
+
+def quality_filter(seq: str, threshold: Union[int, float] = 0) -> bool:
+    """
+    Checks if the mean quality of a read is acceptable
+
+    Arguments:
+    - seq: a string of phed33 quality scores per each nucleotide
+    - threshold: an int or float number, lower boundary for mean quality
+
+    Returns bool
+    """
+
+    seq_qual = sum([ord(i)-33 for i in seq]) / len(seq)
+    return seq_qual >= threshold
 
 # =============================== fastq filtrator original script ===================================
 def filter_fastq(
@@ -203,9 +261,9 @@ def filter_fastq(
                 qual_score = input_fastq.readline().strip()
 
                 
-                if (ft.gc_filter(seq=seq, gc_bounds=gc_bounds) and
-                    ft.len_filter(seq=seq, len_bounds=length_bounds) and
-                    ft.quality_filter(seq=qual_score,
+                if (gc_filter(seq=seq, gc_bounds=gc_bounds) and
+                    len_filter(seq=seq, len_bounds=length_bounds) and
+                    quality_filter(seq=qual_score,
                                       threshold=quality_threshold)):
                     passed += 1
                     filtered_seqs[key] = [seq, qual_score]
