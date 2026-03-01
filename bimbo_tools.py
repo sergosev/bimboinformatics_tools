@@ -1,4 +1,5 @@
 from typing import Union
+import Bio
 import os
 import sys
 from abc import ABC, abstractmethod

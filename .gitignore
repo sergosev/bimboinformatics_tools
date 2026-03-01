@@ -3,6 +3,9 @@
 ./__pycache__/
 ./filtered/
 ./filtered/*
+./.vscode
+./.vscode/
+./.vscode/*
 processor_output/parse_output.txt
 processor_output/gbk_to_fasta_result.fasta
 modules/__pycache__/processor_tools.cpython-312.pyc
