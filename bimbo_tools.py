@@ -6,13 +6,16 @@ from abc import ABC, abstractmethod
 
 # =============================== bimbo tools class refactoring ===================================
 class BiologicalSequence(ABC):
-    def __init__(self, seq: str = None)
+    def __init__(self, seq: str = None):
         if not isinstance(seq, str):
             raise TypeError(f"Sequence must be string, got {type(seq).__name__}")
         if not seq:
             raise ValueError("Sequence cannot be empty")
         
         self.seq = seq
+
+        if not self.check_alphabet():
+            raise ValueError(f"Invalid characters in sequence: {set(self.seq) - set('AaTtCcUuGg')}")
 
     def __len__(self):
         return len(self.seq)
@@ -24,182 +27,128 @@ class BiologicalSequence(ABC):
         return self.seq[key]
     
     @abstractmethod
-    def check_alphabet(self, alphabet: set) -> bool:
+    def check_alphabet(self) -> bool:
         pass
     
-class NucleicAcidSequence():
+class NucleicAcidSequence(BiologicalSequence):
+    def complement(self):
+        """
+        Returns a complement NucleicAcidSequence object.
+
+        Returns an object of a given class (NucleicAcid, DNA or RNA Sequence)
+        """
+        if any(item in set("Uu") for item in set(self.seq)):
+            letters = {
+                "A": "U",
+                "a": "u",
+                "U": "A",
+                "u": "a",
+                "C": "G",
+                "c": "g",
+                "G": "C",
+                "g": "c",
+            }
+        else:
+            letters = {
+                "A": "T",
+                "a": "t",
+                "T": "A",
+                "t": "a",
+                "C": "G",
+                "c": "g",
+                "G": "C",
+                "g": "c",
+            }
+
+        comp = ""
+        for nucl in self.seq:
+            comp += letters[nucl]
+
+        return type(self)(comp)
+
+    def reverse(self):
+        """
+        Returns reversed NucleicAcidSequence object.
+
+        Returns an object of a given class (NucleicAcid, DNA or RNA Sequence)
+        """
+        return type(self)(self.seq[::-1])
+
+    def reverse_complement(self):
+        """
+        Return reversed complement NucleicAcidSequence object.
+
+        Returns an object of a given class (NucleicAcid, DNA or RNA Sequence)
+        """
+        return self.complement().reverse()
+
+    def check_alphabet(self):
+        """
+        Checks whether the given sequence is a nucleic acid.
+
+        Returns False if the sequence does not correspond to asigned class.
+        Returns bool.
+        """
+        if type(self) == DNASequence:
+            return set(self.seq) <= set("AaTtCcGg")
+        elif type(self) == RNASequence:
+            return set(self.seq) <= set("AaUuCcGg")
+        else:
+            return set(self.seq) <= set("AaTtCcUuGg")
+
+class DNASequence(NucleicAcidSequence):
+    def transcribe(self):
+        """
+        Returns:
+            RNASequence object: transciribed RNA Sequence.
+        """
+        transcription = self.seq.replace('t', 'u').replace('T', 'U')
+        return RNASequence(transcription)
+
+class RNASequence(NucleicAcidSequence):
     pass
 
-class DNASequence():
-    pass
+class AminoAcidSequence(BiologicalSequence):
+    def check_alphabet(self):
+        """
+        Check whether the given sequence is a protein/peptide.
 
-class RNASequence():
-    pass
-
-class AminoAcidSequence():
-    pass
-
-# =============================== bimbo tools original module scripts ===================================
-ALPHABET = set("AaTtUuCcGg")
-T_SET = {"T", "t"}
-U_SET = {"U", "u"}
-
-
-def is_nucleic_acid(seq: str, alphabet: set = ALPHABET) -> bool:
-    """
-    Checks whether the given sequence is a nucleic acid
-
-    Arguments:
-    - seq: a string of both UPPERCASE and lowercase letters
-    - alphabet: a set of acceptable nucleotides. Default is set("AaTtUuCcGg")
-
-    Returns False if the sequence contains both T and U.
-    Returns bool.
-    """
-    seq_set = set(seq)
-    return seq_set <= alphabet and not (seq_set & T_SET and seq_set & U_SET)
-
-
-def reverse(seq: str) -> str:
-    """
-    Gives a reversed version of a given string
-
-    Arguments:
-    - seq: a string of both UPPERCASE and lowercase letters
-
-    Returns string.
-    """
-    return seq[::-1]
-
-
-def transcribe(seq: str) -> str:
-    """
-    Creates a transcribed version of the given DNA sequence
-
-    Arguments:
-    - seq: a string of both UPPERCASE and lowercase letters
-
-    Returns string.
-    """
-    trans_table = str.maketrans({"T": "U", "t": "u"})  #  making a translation table
-    return seq.translate(trans_table)  #  returning transcribed sequence
-
-
-def reverse_transcribe(seq: str) -> str:
-    """
-    Gives a reverse transcribed version of a given RNA sequence
-
-    Arguments:
-    - seq: a RNA string containig UPPERCASE or lowercase letters
-
-    Return string.
-    """
-    trans_table = str.maketrans({"U": "T", "u": "t"})  #  making a translation table
-    return seq.translate(trans_table)  #  returning transcribed sequence
-
-
-def complement(seq: str) -> str:
-    """
-    Give a complement version of a given string
-
-    Arguments:
-    - seq: a string of both UPPERCASE and lowercase letters
-
-    Returns string.
-    """
-
-    if any(item in set("Uu") for item in set(seq)):
-        letters = {
-            "A": "U",
-            "a": "u",
-            "U": "A",
-            "u": "a",
-            "C": "G",
-            "c": "g",
-            "G": "C",
-            "g": "c",
-        }
-    else:
-        letters = {
-            "A": "T",
-            "a": "t",
-            "T": "A",
-            "t": "a",
-            "C": "G",
-            "c": "g",
-            "G": "C",
-            "g": "c",
-        }
-
-    comp = ""
-    for nucl in seq:
-        comp += letters[nucl]
-
-    return comp
-
-
-def reverse_complement(seq: str):
-    """
-    Gives a reverse complement of a given string
-
-    Arguments:
-    - seq: a string of both UPPERCASE and lowercase letters
-
-    Returns string.
-    """
-    return complement(seq)[::-1]
-
-
-# =============================== bimbo tools original main func ===================================
-def run_dna_rna_tools(*seqs: str):
-    """
-    Performs certain procedures need for work with nucleic acids.
-
-    Arguments:
-    - seqs - a series of strings containing DNA or RNA sequences, separated by a coma.
+        Returns False if the sequence does not correspond to AminoAcidSequence.
+        Returns bool.
+        """
+        return set(self.seq) <= set('ACDEFGHIKLMNPQRSTVWY')
     
-    Last string of the series must be a procedure:
-    - is_nucleic_acid: checks whether give strings are nucleic acids or not. Returns bool
-    - reverse: reverts the given strings
-    - transcribe: returns transcribed (DNA to RNA) versions of given strings
-    - reverse_transcribe: returns reversely transcribed (RNA to DNA) versions of given strings
-    - complement: returns complement vesions of given sctrings
-    - reverse_complement: returns reversed complement versions of the given strings
-
-    If a string contains both T and U (i.e. is not a nucleic acid) - results in False. 
-    Otherwise returns a resulting string or bool.
-    """
-
-    command = seqs[-1]  #  saving the procedure name
-    sequences = seqs[:-1]  #  saving the list of sequences
-
-    #  creating a dictionary for procedures
-    procedures = {
-        "is_nucleic_acid": is_nucleic_acid,
-        "transcribe": transcribe,
-        "reverse_transcribe": reverse_transcribe,
-        "reverse": reverse,
-        "complement": complement,
-        "reverse_complement": reverse_complement,
-    }
-
-    #  for one give sequence return a string
-    #  more than one - a list of strings
-    if len(sequences) == 1:
-        seq = sequences[0]
-        nuc_status = is_nucleic_acid(seq)
-        return procedures[command](seq) if nuc_status else nuc_status
-    else:
-        result = []
-        for seq in sequences:
-            nuc_status = is_nucleic_acid(seq)
-            if nuc_status:
-                result.append(procedures[command](seq))
-            else:
-                result.append(nuc_status)
-
-        return result
+    def molecular_weight(self):
+        """
+        Calculate the molecular weight of the amino acid sequence
+        Amino acid weights are for free amino acids; water (18 Da) 
+        is subtracted per peptide bond.
     
+        Returns:
+            float: Molecular weight in Da.
+        """
+        weights = {'A': 89.09, 'R': 174.2, 'N': 132.12, 'D': 133.1,
+                   'C': 121.16, 'Q': 146.15, 'E': 147.13, 'G': 75.07,
+                   'H': 155.16, 'I': 131.17, 'L': 131.17, 'K': 146.19,
+                   'M': 149.21, 'F': 165.19, 'P': 115.13, 'S': 105.09,
+                   'T': 119.12, 'W': 204.23, 'Y': 181.19, 'V': 117.15}
+        
+        return sum([weights[aa] for aa in self.seq]) - 18 * (len(self.seq) - 1)
+    
+    def hydrophobicity_score(self):
+        """
+        Calculate the proportion of hydrophobic AAs in the amino acid sequence.
+
+        Returns:
+            float: proportion of hydrophobic AAs.
+        """
+        hydrophobic_aas = 'AVLIPFMW'
+        hydrophobic_count = 0
+        for aa in self.seq:
+            hydrophobic_count += aa in hydrophobic_aas
+        
+        return hydrophobic_count / len(self.seq)
+
 
 # =============================== fastq filtrator original script ===================================
 def filter_fastq(
