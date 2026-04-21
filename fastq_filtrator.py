@@ -2,6 +2,7 @@ from Bio import SeqIO, SeqUtils
 from typing import Union
 import argparse
 import logging 
+import os
 
 def filter_fastq(
     input_file: str,
@@ -44,12 +45,13 @@ def filter_fastq(
             filtered.append(record)
             filt_count += 1
 
-    print(f"Received {counter} sequences")
-    print(f"Saved {filt_count} sequences")
-    print(f"Deleted {counter-filt_count} sequences")
+
+    logging.info(f"Received {counter} sequences")
+    logging.info(f"Saved {filt_count} sequences")
+    logging.info(f"Deleted {counter-filt_count} sequences")
 
     if output_file != None:
-        print(f"Saved results to {output_file}")
+        logging.info(f"Saved results to {output_file}")
         with open(output_file, "w") as output:
             SeqIO.write(filtered, output, "fastq")
         return None
@@ -58,6 +60,16 @@ def filter_fastq(
         return filtered
 
 def main():
+    os.makedirs("./logs", exist_ok=True)
+
+    logging.basicConfig(
+        filename="./logs/fastq_filtrator_logs.log",
+        filemode="w",
+        level=logging.INFO, 
+        format="{levelname} | {asctime} --> {message}", 
+        datefmt="%Y-%m-%d %H:%M:%S",
+        style="{"
+    )
     parser = argparse.ArgumentParser(description="Fastq files filtering tool")
 
     parser.add_argument("-i", "--input-file", type=str, help="Path to the fastq file to filter")
@@ -72,6 +84,10 @@ def main():
     parser.add_argument("-q", "--qual", type=float, help="phred33 mean quality threshold")
 
     args = parser.parse_args()
+
+    if args.input_file == None:
+        logging.error("No input file provided! Aborting")
+        raise ValueError("No input file provided")
 
     gc_bounds = (args.gc_lower or 0, args.gc_upper or 100)
     len_bounds = (args.len_lower or 0, args.len_upper or 2**21)
