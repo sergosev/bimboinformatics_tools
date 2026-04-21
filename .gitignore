@@ -13,3 +13,8 @@ modules/__pycache__/processor_tools.cpython-314.pyc
 test_data/*.fastq
 test_data/*.fastq
 .Rhistory
+./logs
+/logs
+./logs/*
+/logs/*.log
+logs/*
