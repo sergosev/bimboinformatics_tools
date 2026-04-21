@@ -1,6 +1,7 @@
 from Bio import SeqIO, SeqUtils
 from typing import Union
 import argparse
+import logging 
 
 def filter_fastq(
     input_file: str,
