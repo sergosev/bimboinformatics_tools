@@ -37,9 +37,9 @@ def filter_fastq(
         qualities = record.letter_annotations["phred_quality"]
         mean_qual = sum(qualities) / length
 
-        gc_flag = gc_bounds[0] < GC < gc_bounds[1]
-        len_flag = len_bounds[0] < length < len_bounds[1]
-        qual_flag = mean_qual > quality_threshold
+        gc_flag = gc_bounds[0] <= GC <= gc_bounds[1]
+        len_flag = len_bounds[0] <= length <= len_bounds[1]
+        qual_flag = mean_qual >= quality_threshold
 
         if gc_flag and len_flag and qual_flag:
             filtered.append(record)
@@ -55,10 +55,9 @@ def filter_fastq(
         with open(output_file, "w") as output:
             SeqIO.write(filtered, output, "fastq")
     else:
-        print(*[record for record in filtered], sep="\n")
+        print(*[record.format("fastq") for record in filtered], sep="\n")
+        return filtered
     
-    return filtered
-
 def main():
     os.makedirs("./logs", exist_ok=True)
 
