@@ -1,4 +1,5 @@
-# =============================== fastq filtrator via BioPython ===================================
+from Bio import SeqIO, SeqUtils, SeqRecord
+
 def filter_fastq(
     input_file: str,
     gc_bounds: tuple[Union[int, float], Union[int, float]] = (0, 100),

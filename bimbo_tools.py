@@ -1,5 +1,4 @@
 from typing import Union
-from Bio import SeqIO, SeqUtils, SeqRecord
 from abc import ABC, abstractmethod
 
 
