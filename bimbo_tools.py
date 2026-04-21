@@ -1,125 +1,172 @@
 from typing import Union
-import modules.nucleic_tools as nt 
-import modules.fastq_tools as ft 
-import os
-import sys
+from Bio import SeqIO, SeqUtils, SeqRecord
+from abc import ABC, abstractmethod
 
 
-def run_dna_rna_tools(*seqs: str):
-    """
-    Performs certain procedures need for work with nucleic acids.
+# =============================== bimbo tools class refactoring ===================================
+class BiologicalSequence(ABC):
+    def __init__(self, seq: str = None):
+        if not isinstance(seq, str):
+            raise TypeError(f"Sequence must be string, got {type(seq).__name__}")
+        if not seq:
+            raise ValueError("Sequence cannot be empty")
 
-    Arguments:
-    - seqs - a series of strings containing DNA or RNA sequences, separated by a coma.
-    
-    Last string of the series must be a procedure:
-    - is_nucleic_acid: checks whether give strings are nucleic acids or not. Returns bool
-    - reverse: reverts the given strings
-    - transcribe: returns transcribed (DNA to RNA) versions of given strings
-    - reverse_transcribe: returns reversely transcribed (RNA to DNA) versions of given strings
-    - complement: returns complement vesions of given sctrings
-    - reverse_complement: returns reversed complement versions of the given strings
+        self.seq = seq
 
-    If a string contains both T and U (i.e. is not a nucleic acid) - results in False. 
-    Otherwise returns a resulting string or bool.
-    """
+        if not self.check_alphabet():
+            raise ValueError(
+                f"Invalid characters in sequence: {set(self.seq) - set('AaTtCcUuGg')}"
+            )
 
-    command = seqs[-1]  #  saving the procedure name
-    sequences = seqs[:-1]  #  saving the list of sequences
+    def __len__(self):
+        return len(self.seq)
 
-    #  creating a dictionary for procedures
-    procedures = {
-        "is_nucleic_acid": nt.is_nucleic_acid,
-        "transcribe": nt.transcribe,
-        "reverse_transcribe": nt.reverse_transcribe,
-        "reverse": nt.reverse,
-        "complement": nt.complement,
-        "reverse_complement": nt.reverse_complement,
-    }
+    def __str__(self):
+        return self.seq
 
-    #  for one give sequence return a string
-    #  more than one - a list of strings
-    if len(sequences) == 1:
-        seq = sequences[0]
-        nuc_status = nt.is_nucleic_acid(seq)
-        return procedures[command](seq) if nuc_status else nuc_status
-    else:
-        result = []
-        for seq in sequences:
-            nuc_status = nt.is_nucleic_acid(seq)
-            if nuc_status:
-                result.append(procedures[command](seq))
-            else:
-                result.append(nuc_status)
+    def __getitem__(self, key):
+        return self.seq[key]
 
-        return result
-    
-def filter_fastq(
-        input_file: str, 
-        gc_bounds: tuple[Union[int, float], Union[int, float]] = (0, 100), 
-        length_bounds: tuple[int] = (0, 2**21), 
-        quality_threshold: Union[int, float] = 0,
-        save_result: bool = True,
-        output_file: str = "output_fastq.fastq"
-) -> dict:
-    """
-    Filters a fastq file with nucleic acid sequences.
+    @abstractmethod
+    def check_alphabet(self) -> bool:
+        pass
 
-    Arguments:
-    - input_file: a string containing a path to input fastq file
-    - gc_bounds: a tuple with GC percentage boundaries (integer or float). Default is (0, 100). Can take a single value as an upper threshold
-    - length_bounds: a tuple with length boundaries (only integer) Default is (0, 2**32). length_bounds
-    - quality_threshold: an integer or float number, lower boundary for mean quality. Default is 0.
-    - save_result: a boolean value saying if the filtering result should be saved or not
-    - output_file: a string containin the name of the output file
 
-    Returns a new dictionary containing sequences that correspond to the given filters.
-    Saves the result to "filtered" directory in an output fastq file.
-    For valid results check if your sequences are nucleic acids using nucleic_tools module.
-    """
-    
-    if isinstance(gc_bounds, int) or isinstance(gc_bounds, float):
-        gc_bounds = (0, gc_bounds)
+class NucleicAcidSequence(BiologicalSequence):
+    def complement(self):
+        """
+        Returns a complement NucleicAcidSequence object.
 
-    if isinstance(length_bounds, int):
-        length_bounds = (0, length_bounds)  
+        Returns an object of a given class (NucleicAcid, DNA or RNA Sequence)
+        """
+        if any(item in set("Uu") for item in set(self.seq)):
+            letters = {
+                "A": "U",
+                "a": "u",
+                "U": "A",
+                "u": "a",
+                "C": "G",
+                "c": "g",
+                "G": "C",
+                "g": "c",
+            }
+        else:
+            letters = {
+                "A": "T",
+                "a": "t",
+                "T": "A",
+                "t": "a",
+                "C": "G",
+                "c": "g",
+                "G": "C",
+                "g": "c",
+            }
 
-    #setting up directories
-    work_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-    if not os.path.exists(os.path.join(work_dir, 'filtered')):
-        os.mkdir(os.path.join(work_dir, "filtered"))
-    output_path = os.path.join(work_dir, "filtered", output_file)
+        comp = ""
+        for nucl in self.seq:
+            comp += letters[nucl]
 
-    # filtering on the go
-    filtered_seqs = {}
-    counter = 0
-    passed = 0
-    with (open(input_file, mode="r") as input_fastq,
-          open(output_path, mode="w") as output_fastq):
-        
-        for line in input_fastq:
-            if line.startswith("@"):
-                counter += 1
-                key = line
-                seq = input_fastq.readline().strip()
-                next(input_fastq)
-                qual_score = input_fastq.readline().strip()
+        return type(self)(comp)
 
-                
-                if (ft.gc_filter(seq=seq, gc_bounds=gc_bounds) and
-                    ft.len_filter(seq=seq, len_bounds=length_bounds) and
-                    ft.quality_filter(seq=qual_score,
-                                      threshold=quality_threshold)):
-                    passed += 1
-                    filtered_seqs[key] = [seq, qual_score]
-                    if save_result:
-                        output_fastq.write(key)
-                        output_fastq.write(seq+"\n")
-                        output_fastq.write("+"+key[1:])
-                        output_fastq.write(qual_score+"\n")
+    def reverse(self):
+        """
+        Returns reversed NucleicAcidSequence object.
 
-    print(f'Received {counter} sequences.')
-    print(f'Returned {passed} sequences.')
-    print(f'Filtered sequences saved to {output_path}')
-    print(f'Filtered out {counter - passed} sequences.')
-    return filtered_seqs
+        Returns an object of a given class (NucleicAcid, DNA or RNA Sequence)
+        """
+        return type(self)(self.seq[::-1])
+
+    def reverse_complement(self):
+        """
+        Return reversed complement NucleicAcidSequence object.
+
+        Returns an object of a given class (NucleicAcid, DNA or RNA Sequence)
+        """
+        return self.complement().reverse()
+
+    def check_alphabet(self):
+        """
+        Checks whether the given sequence is a nucleic acid.
+
+        Returns False if the sequence does not correspond to asigned class.
+        Returns bool.
+        """
+        if type(self) == DNASequence:
+            return set(self.seq) <= set("AaTtCcGg")
+        elif type(self) == RNASequence:
+            return set(self.seq) <= set("AaUuCcGg")
+        else:
+            return set(self.seq) <= set("AaTtCcUuGg")
+
+
+class DNASequence(NucleicAcidSequence):
+    def transcribe(self):
+        """
+        Returns:
+            RNASequence object: transciribed RNA Sequence.
+        """
+        transcription = self.seq.replace("t", "u").replace("T", "U")
+        return RNASequence(transcription)
+
+
+class RNASequence(NucleicAcidSequence):
+    pass
+
+
+class AminoAcidSequence(BiologicalSequence):
+    def check_alphabet(self):
+        """
+        Check whether the given sequence is a protein/peptide.
+
+        Returns False if the sequence does not correspond to AminoAcidSequence.
+        Returns bool.
+        """
+        return set(self.seq) <= set("ACDEFGHIKLMNPQRSTVWY")
+
+    def molecular_weight(self):
+        """
+        Calculate the molecular weight of the amino acid sequence
+        Amino acid weights are for free amino acids; water (18 Da)
+        is subtracted per peptide bond.
+
+        Returns:
+            float: Molecular weight in Da.
+        """
+        weights = {
+            "A": 89.09,
+            "R": 174.2,
+            "N": 132.12,
+            "D": 133.1,
+            "C": 121.16,
+            "Q": 146.15,
+            "E": 147.13,
+            "G": 75.07,
+            "H": 155.16,
+            "I": 131.17,
+            "L": 131.17,
+            "K": 146.19,
+            "M": 149.21,
+            "F": 165.19,
+            "P": 115.13,
+            "S": 105.09,
+            "T": 119.12,
+            "W": 204.23,
+            "Y": 181.19,
+            "V": 117.15,
+        }
+
+        return sum([weights[aa] for aa in self.seq]) - 18 * (len(self.seq) - 1)
+
+    def hydrophobicity_score(self):
+        """
+        Calculate the proportion of hydrophobic AAs in the amino acid sequence.
+
+        Returns:
+            float: proportion of hydrophobic AAs.
+        """
+        hydrophobic_aas = "AVLIPFMW"
+        hydrophobic_count = 0
+        for aa in self.seq:
+            hydrophobic_count += aa in hydrophobic_aas
+
+        return hydrophobic_count / len(self.seq)
