@@ -1,4 +1,5 @@
 from Bio import SeqIO, SeqUtils, SeqRecord
+import argparse
 
 def filter_fastq(
     input_file: str,
@@ -54,3 +55,6 @@ def filter_fastq(
         return None
 
     return filtered
+
+def main():
+    pass
