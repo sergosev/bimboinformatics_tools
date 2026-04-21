@@ -1,4 +1,4 @@
-from Bio import SeqIO, SeqUtils, SeqRecord
+from Bio import SeqIO, SeqUtils
 from typing import Union
 import argparse
 
@@ -48,7 +48,7 @@ def filter_fastq(
     print(f"Deleted {counter-filt_count} sequences")
 
     if output_file != None:
-        print(f"Saving result to {output_file}")
+        print(f"Saved results to {output_file}")
         with open(output_file, "w") as output:
             SeqIO.write(filtered, output, "fastq")
         return None
