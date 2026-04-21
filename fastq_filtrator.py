@@ -54,10 +54,10 @@ def filter_fastq(
         logging.info(f"Saved results to {output_file}")
         with open(output_file, "w") as output:
             SeqIO.write(filtered, output, "fastq")
-        return None
     else:
         print(*[record for record in filtered], sep="\n")
-        return filtered
+    
+    return filtered
 
 def main():
     os.makedirs("./logs", exist_ok=True)
