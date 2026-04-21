@@ -18,3 +18,5 @@ test_data/*.fastq
 ./logs/*
 /logs/*.log
 logs/*
+__pycache__/
+__pycache__
