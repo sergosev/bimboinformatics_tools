@@ -1,48 +1,84 @@
-# BiMbOiNfOrMaTiCs tools 👁️ 👄 👁️ 
+# Bimbo tools 👁️ 👄 👁️ 
 This is my study project where I am supposed to create a python script that performs various manipulations with nucleic acid sequences and filter fastq sequences. Unfortunately for my educators the task didn't say anything specific about the naming of the repository 💀 
 
-The tools here don't require installation, you are free to use them from your IDE. Consider the fact that all modules and scripts here were written with Python 3.12.3.
+The tools here don't require installation, you are free to use them from your IDE. Consider the fact that all modules and scripts here were written with Python 3.14.3. 
 ## bimbo_tools.py
-This script is the entry point. It contains 2 main functions: `run_dna_rna_tools()` and `filter_fastq()`. The supplementary functions needed for these 2 to work are located in **nucleic_tools.py** and **fastq_tools.py** modules in `./modules/` directory.
 
-### run_dna_rna_tools()
-This function takes a series of strings as its argument. CAUTION: the last string in the series must be one of the procedures you'd like to perform with your strings:
-- **is_nucleic_acid**: checks whether give strings are nucleic acids or not. Returns bool
-- **reverse**: reverts the given strings
-- **transcribe**: returns transcribed (DNA to RNA) versions of given strings
-- **reverse_transcribe**: returns reversely transcribed (RNA to DNA) versions of given strings
-- **complement**: returns complement vesions of given sctrings
-- **reverse_complement**: returns reversed complement versions of the given strings
+This module contains classes for handling biological sequences and filtering `.fastq` files.
+### BiologicalSequences handling
+The module allows the user to work with Nucleic Acid Sequences and Amino Acid Sequences. 
+Among nucleic acids there are 2 main classes:
+- `DNASequence()`
+- `RNASequence()`
 
-All procedures are case-independent so you can use both UPPERCASE and lowercase letters for nucleic acid sequences.
+Both of these classes have these methods:
+- `.complement()`: returns complement sequence of original class
+- `.reverse()`: returns a reversed sequence of original class
+- `.reverse_complement()`: a combination of 2 methods above
+- `.check_alphabet()`: checks is the sequence is truly DNA or RNA
 
-NOTE: if one of your sequences contains both T and U (i.e. is not a nucleic acid) the result for this string will be `False` no matter what procedure you typed in.
+Also `DNASequence` Class has `.transcribe()` method: returns `RNASequence` object.
 
-**Examples of use**:
-```{python3}
-print(run_dna_rna_tools("ATUG", "ATG", "CGaT", "transcribe")) # [False, 'AUG', 'CGaU']
+AminoAcidSequence class has these methods:
+- `.check_alphabet()`: confirm that given sequence is an amino acid sequence
+- `.molecular_weight()`: calculate molecular weight of a given peptide/protein in Da
+- `.hydrophobicity_score()`:  calculate the proportion of hydrophobic AAs in a peptide/protein
 
-print(run_dna_rna_tools("CAG", "reverse_complement")) # CTG
+**Examples of use**
+```python
+dna = DNASequence('ATGTAGTATCTCATCGT')
+rna = RNASequence('CUAGCUAGCUA')
+prot = AminoAcidSequence('RNDLIHKMFPS')
 
-print(run_dna_rna_tools("GAuaGuaCCucA", "is_nucleic_acid")) # True
+print(dna) # ATGTAGTATCTCATCGT
+print(rna[1:5]) # UAGC
+print(dna.transcrive()) # AUGUAGUAUCUCAUCGU
+print(rna.reverse_complement()) # UAGCUAGCUAG
+print(prot.molecular_weight()) # 1357.73
+print(prot.hydrophobicity_score()) # 0.45454545454545453
+```
+### fastq_filtrator.py
+It is a CLI-style tool for filtering fastq files, capable of parsing through these arguments:
+- `-i`, `--input-file` : a path to the input fastq file
+- `--gc-lower`, `--gc-upper` : 2 arguments with GC perventage boundaries for filtering, can receive only one of them (the second boundary will be set to default, 0 for lowet and 100 for upper)
+- `--len-lower`, `--len-upper` : 2 arguments for length boundaries, only one can be passed and the second will be set to default. Default range is (0, $2^{21}$)
+- `--qual` : phred score threshold for mean quality filtering. Default is 0.
+- `-o`, `--output-file` : a string with output file path. Default is None, result is printed to stdout in `fastq` format
+
+The tool can filter fastq files based on GC contents percentage, sequence lengths and mean phred33 quality. Filtering statistics are written to `.log` file located in `logs/` directory that is created after the use of the tool. 
+
+**Examples of use**
+```bash
+python \
+	./fastq_filtrator.py \
+	--input-file ./test_data/SRR1705851.fastq \
+	--gc-lower 25 \
+	--gc-upper 75 \
+	--len-lower 50 \
+	-q 30 \
+	-o ./test_data/SRR1705851_filtered.fastq
+```
+Output (in a `.log` file):
+```bash
+INFO | 2026-04-22 00:01:15 --> Received 358265 sequences
+INFO | 2026-04-22 00:01:15 --> Saved 342092 sequences
+INFO | 2026-04-22 00:01:15 --> Deleted 16173 sequences
 ```
 
-### filter_fastq()
-This function takes in a fastq file. For now the function is capable of taking these parameters for filtering as its arguments:
-- gc_bounds: a tuple with GC percentage boundaries (integer or float). Default is (0, 100)
-- length_bounds: a tuple with length boundaries (only integer) Default is (0, $2^{32}$)
-- quality_threshold: an integer or float number, lower boundary for mean quality. Default is 0.
+```bash
+head ./test_data/SRR1705851_filtered.fastq
 
-The function returns a new, filtered dictionary, prints numbers of taken and filtered sequences, saves the filtered result to a file in a `./filtered` directory. There is a flag parameter save_ouput to mark whether you want to save results to a file.
-
-**Example of use**
-```{python3}
-filter_fastq(example_dict,
-			gc_bounds=(20, 80.5),
-			length_bounds=(50, 5000),
-			quality_threshold=99.9)
+@SRR1705851.1 1/1
+TTCGTGATTGTTTTCACTATCGTTCCGTTTGGCACTGCATGGTGCCCAAGGCACAGCGTTGCCGTGCTGTTGTCATTTCCAGGAAGTTTTTGAGCGAAAACCAGACATAGAATGTAGCTCAAAGCAATGATAGTCTTCATGGTTAATAG
++
+,<==<<<<A@@@@@@@EEE;CEE+AC>EC;>EFFDC@=A@AE999DDD>>@E777EE75C>EF>EDEEFFFF--AE>EDEEEED=C-58AE=<D=<<DD=D9CDD@EEDED@DEDDE*9;@DDED@@@7@E*;*888@*8;@8@;;@@E
+@SRR1705851.2 2/1
+NATTAACCATGAAGACTATCATTGCTTTGAGCTACATTCTATGTCTGGTTTTCGCTCAAAAACTTCCTGGAAATGACAACAGCACGGCAACGCTGTGCCTTGGGCACCATGCAGTGCCAAACGGAACGATAGTGAAAACAATCACGAATGA
++
+#5<???BBEEEDEDDDGGGGGGIIIIIIIIIIIIIIIIIIIIIHIIIIFHHIIHHHHHIIIIHIIIIIIIHIIIIIIIIIIIIIIHHHHHHHHHHEHHHHHFFHHHHHHFFHHGFGGGGGGGGGGGGGEEEGCEEGGGGGEEGGGGCGEGG
+@SRR1705851.4 4/1
+GTGCCCAAGGCACAGCGTTGCCGTGCTGTTGTCATTTCCAGGAAGTTTTTGAGCGAAAACCAGACATAGAATGTAGCTCAAAGCAATGATAGTCTTCATGGTTAATAG
 ```
-
 ## bio_files_processor.py
 This scripts is set to read some bioinformatics file formats. For now there are 2 functions: `select_from_gbk_to_fasta()` and `parse_blast_output()`.
 
@@ -67,7 +103,7 @@ The function does not account for:
 In these cases it might produce incomplete results or raise errors.
 
 **Example of use**
-```
+```python
 select_genes_from_gbk_to_fasta(input_gbk="example_gbk.gbk", genes="iucA",
 								n_before=3, n_after=2,
 								output_fasta="result_fasta.fasta")
@@ -96,6 +132,4 @@ parse_blast_output(input_file="example_blast_result.txt",
 Would be glad to hear any suggestions! Especially how to deal with 7 intendation levels...
 TG: @small_party
 
-
-![](pics/image.webp)
-![]()
+![](pics/Alice.jpg)
