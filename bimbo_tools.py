@@ -14,7 +14,7 @@ class BiologicalSequence(ABC):
 
         if not self.check_alphabet():
             raise ValueError(
-                f"Invalid characters in sequence: {set(self.seq) - set('AaTtCcUuGg')}"
+                f"Invalid characters in sequence: {set(self.seq) - self._alphabet}"
             )
 
     def __len__(self):
@@ -24,48 +24,28 @@ class BiologicalSequence(ABC):
         return self.seq
 
     def __getitem__(self, key):
-        return self.seq[key]
+        result = self.seq[key]
+        if isinstance(key, slice):
+            return type(self)(result)
+        return result
 
-    @abstractmethod
+    _alphabet = set()
     def check_alphabet(self) -> bool:
-        pass
+        if not self._alphabet:
+            return True  # если алфавит не определён — не проверяем
+        return set(self.seq) <= self._alphabet
 
 
 class NucleicAcidSequence(BiologicalSequence):
+    _complement_map = {}
+
     def complement(self):
         """
         Returns a complement NucleicAcidSequence object.
 
         Returns an object of a given class (NucleicAcid, DNA or RNA Sequence)
         """
-        if any(item in set("Uu") for item in set(self.seq)):
-            letters = {
-                "A": "U",
-                "a": "u",
-                "U": "A",
-                "u": "a",
-                "C": "G",
-                "c": "g",
-                "G": "C",
-                "g": "c",
-            }
-        else:
-            letters = {
-                "A": "T",
-                "a": "t",
-                "T": "A",
-                "t": "a",
-                "C": "G",
-                "c": "g",
-                "G": "C",
-                "g": "c",
-            }
-
-        comp = ""
-        for nucl in self.seq:
-            comp += letters[nucl]
-
-        return type(self)(comp)
+        return type(self)(''.join(self._complement_map[base] for base in self.seq))
 
     def reverse(self):
         """
@@ -83,22 +63,11 @@ class NucleicAcidSequence(BiologicalSequence):
         """
         return self.complement().reverse()
 
-    def check_alphabet(self):
-        """
-        Checks whether the given sequence is a nucleic acid.
-
-        Returns False if the sequence does not correspond to asigned class.
-        Returns bool.
-        """
-        if type(self) == DNASequence:
-            return set(self.seq) <= set("AaTtCcGg")
-        elif type(self) == RNASequence:
-            return set(self.seq) <= set("AaUuCcGg")
-        else:
-            return set(self.seq) <= set("AaTtCcUuGg")
-
-
 class DNASequence(NucleicAcidSequence):
+    _complement_map = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G',
+                       'a': 't', 't': 'a', 'g': 'c', 'c': 'g'}
+    _alphabet = set('AaTtCcGg')
+
     def transcribe(self):
         """
         Returns:
@@ -109,18 +78,12 @@ class DNASequence(NucleicAcidSequence):
 
 
 class RNASequence(NucleicAcidSequence):
-    pass
-
+    _complement_map = {'A': 'U', 'U': 'A', 'G': 'C', 'C': 'G',
+                       'a': 'u', 'u': 'a', 'g': 'c', 'c': 'g'}
+    _alphabet = set('AaUuCcGg')
 
 class AminoAcidSequence(BiologicalSequence):
-    def check_alphabet(self):
-        """
-        Check whether the given sequence is a protein/peptide.
-
-        Returns False if the sequence does not correspond to AminoAcidSequence.
-        Returns bool.
-        """
-        return set(self.seq) <= set("ACDEFGHIKLMNPQRSTVWY")
+    _alphabet = set('ACDEFGHIKLMNPQRSTVWY')
 
     def molecular_weight(self):
         """
