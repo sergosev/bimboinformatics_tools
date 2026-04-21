@@ -1,4 +1,5 @@
 from Bio import SeqIO, SeqUtils, SeqRecord
+from typing import Union
 import argparse
 
 def filter_fastq(
@@ -6,8 +7,7 @@ def filter_fastq(
     gc_bounds: tuple[Union[int, float], Union[int, float]] = (0, 100),
     len_bounds: tuple[int] = (0, 2**21),
     quality_threshold: Union[int, float] = 0,
-    save_result: bool = True,
-    output_file: str = "output_fastq.fastq",
+    output_file: str = None,
 ) -> list:
     """
     Filters a fastq file with nucleic acid sequences.
@@ -15,13 +15,12 @@ def filter_fastq(
     Arguments:
     - input_file: a string containing a path to input fastq file
     - gc_bounds: a tuple with GC percentage boundaries (integer or float). Default is (0, 100). Can take a single value as an upper threshold
-    - length_bounds: a tuple with length boundaries (only integer) Default is (0, 2**32). Can take a single value as an upper threshold
+    - length_bounds: a tuple with length boundaries (only integer) Default is (0, 2**21). Can take a single value as an upper threshold
     - quality_threshold: an integer or float number, lower boundary for mean quality. Default is 0.
-    - save_result: a boolean value saying if the filtering result should be saved or not
-    - output_file: a string containin the name of the output file
+    - output_file: a string containin the name of the output file. Default is None. If None, outputs the result to the stdout
 
     Returns a list containing SeqRecord objects.
-    Saves the result to "filtered" directory in an output fastq file.
+    Saves the result to an output fastq file.
     """
     gc_bounds = (0, gc_bounds) if isinstance(gc_bounds, (int, float)) else gc_bounds
     len_bounds = (0, len_bounds) if isinstance(len_bounds, (int, float)) else len_bounds
@@ -48,13 +47,41 @@ def filter_fastq(
     print(f"Saved {filt_count} sequences")
     print(f"Deleted {counter-filt_count} sequences")
 
-    if save_result:
+    if output_file != None:
         print(f"Saving result to {output_file}")
         with open(output_file, "w") as output:
             SeqIO.write(filtered, output, "fastq")
         return None
-
-    return filtered
+    else:
+        print(*[record for record in filtered], sep="\n")
+        return filtered
 
 def main():
-    pass
+    parser = argparse.ArgumentParser(description="Fastq files filtering tool")
+
+    parser.add_argument("-i", "--input-file", type=str, help="Path to the fastq file to filter")
+    parser.add_argument("-o", "--output-file", type=str, help="Path to the output file")
+
+    parser.add_argument("--gc-lower", type=float, help="Lower perventage boundary of GC contents")
+    parser.add_argument("--gc-upper", type=float, help="Upper perventage boundary of GC contents")
+
+    parser.add_argument("--len-lower", type=int, help="Lower sequence length boundary")
+    parser.add_argument("--len-upper", type=int, help="Upper sequence length boundary")
+
+    parser.add_argument("-q", "--qual", type=float, help="phred33 mean quality threshold")
+
+    args = parser.parse_args()
+
+    gc_bounds = (args.gc_lower or 0, args.gc_upper or 100)
+    len_bounds = (args.len_lower or 0, args.len_upper or 2**21)
+    
+    filter_fastq(
+        input_file=args.input_file,
+        gc_bounds=gc_bounds,
+        len_bounds=len_bounds,
+        quality_threshold=args.qual or 0,
+        output_file=args.output_file
+    )
+
+if __name__ == "__main__":
+    main()
