@@ -32,7 +32,7 @@ class BiologicalSequence(ABC):
     _alphabet = set()
     def check_alphabet(self) -> bool:
         if not self._alphabet:
-            return True  # если алфавит не определён — не проверяем
+            return True
         return set(self.seq) <= self._alphabet
 
 

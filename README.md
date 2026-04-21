@@ -1,7 +1,7 @@
-# BiMbOiNfOrMaTiCs tools 👁️ 👄 👁️ 
+# Bimbo tools 👁️ 👄 👁️ 
 This is my study project where I am supposed to create a python script that performs various manipulations with nucleic acid sequences and filter fastq sequences. Unfortunately for my educators the task didn't say anything specific about the naming of the repository 💀 
 
-The tools here don't require installation, you are free to use them from your IDE. Consider the fact that all modules and scripts here were written with Python 3.14.3.
+The tools here don't require installation, you are free to use them from your IDE. Consider the fact that all modules and scripts here were written with Python 3.14.3. 
 ## bimbo_tools.py
 
 This module contains classes for handling biological sequences and filtering `.fastq` files.
@@ -37,30 +37,47 @@ print(rna.reverse_complement()) # UAGCUAGCUAG
 print(prot.molecular_weight()) # 1357.73
 print(prot.hydrophobicity_score()) # 0.45454545454545453
 ```
-### filter_fastq()
-This function takes in a fastq file. For now the function is capable of taking these parameters for filtering as its arguments:
-- gc_bounds: a tuple with GC percentage boundaries (integer or float). Default is (0, 100)
-- len_bounds: a tuple with length boundaries (only integer) Default is (0, $2^{32}$)
-- quality_threshold: an integer or float number, lower boundary for mean quality. Default is 0.
-- save_result: a bool value. If True the results of filtering are saved to a `.fastq` file. Default is True.
-- output_file: a string with output file name. Default is "output_fastq.fastq"
+### fastq_filtrator.py
+It is a CLI-style tool for filtering fastq files, capable of parsing through these arguments:
+- `-i`, `--input-file` : a path to the input fastq file
+- `--gc-lower`, `--gc-upper` : 2 arguments with GC perventage boundaries for filtering, can receive only one of them (the second boundary will be set to default, 0 for lowet and 100 for upper)
+- `--len-lower`, `--len-upper` : 2 arguments for length boundaries, only one can be passed and the second will be set to default. Default range is (0, $2^{21}$)
+- `--qual` : phred score threshold for mean quality filtering. Default is 0.
+- `-o`, `--output-file` : a string with output file path. Default is None, result is printed to stdout in `fastq` format
 
-The function returns a new, filtered list of SeqRecord objects, prints numbers of taken and filtered sequences, saves the filtered result to a file in a `./filtered` directory. 
+The tool can filter fastq files based on GC contents percentage, sequence lengths and mean phred33 quality. Filtering statistics are written to `.log` file located in `logs/` directory that is created after the use of the tool. 
 
-**Example of use**
-```python
-filter_fastq(
-	'./test_data/SRR1705851.fastq',
-	gc_bounds=(20, 80.5),
-	len_bounds=(20, 120),
-	quality_threshold=10)
+**Examples of use**
+```bash
+python \
+	./fastq_filtrator.py \
+	--input-file ./test_data/SRR1705851.fastq \
+	--gc-lower 25 \
+	--gc-upper 75 \
+	--len-lower 50 \
+	-q 30 \
+	-o ./test_data/SRR1705851_filtered.fastq
 ```
-Output:
-```python
-Received 358265 sequences
-Saved 0 sequences
-Deleted 358265 sequences
-Saving result to output_fastq.fastq
+Output (in a `.log` file):
+```bash
+INFO | 2026-04-22 00:01:15 --> Received 358265 sequences
+INFO | 2026-04-22 00:01:15 --> Saved 342092 sequences
+INFO | 2026-04-22 00:01:15 --> Deleted 16173 sequences
+```
+
+```bash
+head ./test_data/SRR1705851_filtered.fastq
+
+@SRR1705851.1 1/1
+TTCGTGATTGTTTTCACTATCGTTCCGTTTGGCACTGCATGGTGCCCAAGGCACAGCGTTGCCGTGCTGTTGTCATTTCCAGGAAGTTTTTGAGCGAAAACCAGACATAGAATGTAGCTCAAAGCAATGATAGTCTTCATGGTTAATAG
++
+,<==<<<<A@@@@@@@EEE;CEE+AC>EC;>EFFDC@=A@AE999DDD>>@E777EE75C>EF>EDEEFFFF--AE>EDEEEED=C-58AE=<D=<<DD=D9CDD@EEDED@DEDDE*9;@DDED@@@7@E*;*888@*8;@8@;;@@E
+@SRR1705851.2 2/1
+NATTAACCATGAAGACTATCATTGCTTTGAGCTACATTCTATGTCTGGTTTTCGCTCAAAAACTTCCTGGAAATGACAACAGCACGGCAACGCTGTGCCTTGGGCACCATGCAGTGCCAAACGGAACGATAGTGAAAACAATCACGAATGA
++
+#5<???BBEEEDEDDDGGGGGGIIIIIIIIIIIIIIIIIIIIIHIIIIFHHIIHHHHHIIIIHIIIIIIIHIIIIIIIIIIIIIIHHHHHHHHHHEHHHHHFFHHHHHHFFHHGFGGGGGGGGGGGGGEEEGCEEGGGGGEEGGGGCGEGG
+@SRR1705851.4 4/1
+GTGCCCAAGGCACAGCGTTGCCGTGCTGTTGTCATTTCCAGGAAGTTTTTGAGCGAAAACCAGACATAGAATGTAGCTCAAAGCAATGATAGTCTTCATGGTTAATAG
 ```
 ## bio_files_processor.py
 This scripts is set to read some bioinformatics file formats. For now there are 2 functions: `select_from_gbk_to_fasta()` and `parse_blast_output()`.
@@ -115,6 +132,4 @@ parse_blast_output(input_file="example_blast_result.txt",
 Would be glad to hear any suggestions! Especially how to deal with 7 intendation levels...
 TG: @small_party
 
-А для проверяющих пасхалка. Если вы знакомы с магичкой - пишите любимого мужчину/женщину оттуда (я в восторге от Хигурумы что после манги, что после последних серий 3 сезона)
-
-![](pics/Gojo.jpg)
+![](pics/Alice.jpg)
